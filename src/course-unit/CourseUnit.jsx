@@ -32,6 +32,8 @@ import PublishControls from './sidebar/PublishControls';
 import LocationInfo from './sidebar/LocationInfo';
 import TagsSidebarControls from '../content-tags-drawer/tags-sidebar-controls';
 import { PasteNotificationAlert } from './clipboard';
+import Attempts from './sidebar/Attempts';
+import AccessCode from './sidebar/AccessCode';
 
 const CourseUnit = ({ courseId }) => {
   const { blockId } = useParams();
@@ -201,6 +203,12 @@ const CourseUnit = ({ courseId }) => {
                     <TagsSidebarControls />
                   </Sidebar>
                 )}
+                <Sidebar data-testid="course-unit-attempts-sidebar">
+                  <Attempts />
+                </Sidebar>
+                <Sidebar data-testid="course-unit-access-code-sidebar">
+                  <AccessCode />
+                </Sidebar>
                 <Sidebar data-testid="course-unit-location-sidebar">
                   <LocationInfo />
                 </Sidebar>

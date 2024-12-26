@@ -54,6 +54,7 @@ import {
   pasteClipboardContent,
   dismissNotificationQuery,
 } from './data/thunk';
+import { base_url } from '../compugrade-constants';
 
 const useCourseOutline = ({ courseId }) => {
   const dispatch = useDispatch();
@@ -118,8 +119,23 @@ const useCourseOutline = ({ courseId }) => {
     return `${getConfig().STUDIO_BASE_URL}/container/${locator}`;
   };
 
-  const openUnitPage = (locator) => {
+  const openUnitPage = async (locator) => {
     const url = getUnitUrl(locator);
+    const response = await fetch(
+      base_url + '/api/openedx/create_rubric',
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json, text/plain, */*',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          openedx_based_id: locator,
+          course_id: courseId,
+          user_id: 1
+        }),
+      }
+    );
     if (getConfig().ENABLE_UNIT_PAGE === 'true') {
       navigate(url);
     } else {

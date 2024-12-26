@@ -53,6 +53,7 @@ import {
   setPasteFileNotices,
   updateCourseLaunchQueryStatus,
 } from './slice';
+import { base_url } from '../../compugrade-constants';
 
 const getErrorDetails = (error, dismissible = true) => {
   const errorInfo = { dismissible };
@@ -357,6 +358,21 @@ export function editCourseItemQuery(itemId, sectionId, displayName) {
           await dispatch(fetchCourseSectionQuery([sectionId]));
           dispatch(hideProcessingNotification());
           dispatch(updateSavingStatus({ status: RequestStatus.SUCCESSFUL }));
+
+          const apiResponse = await fetch(
+            base_url+'/api/openedx/update_rubric',
+            {
+              method: 'PATCH',
+              headers: {
+                Accept: 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                openedx_based_id: itemId,
+                title: displayName,
+              }),
+            }
+          );
         }
       });
     } catch (error) {
