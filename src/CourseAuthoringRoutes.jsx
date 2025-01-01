@@ -24,6 +24,8 @@ import CourseImportPage from './import-page/CourseImportPage';
 import { DECODED_ROUTES } from './constants';
 import CourseChecklist from './course-checklist';
 import GroupConfigurations from './group-configurations';
+import InstructionsHelpEditorPage from './compugrade-pages/InstructionsHelpEditorPage';
+
 
 /**
  * As of this writing, these routes are mounted at a path prefixed with the following:
@@ -129,6 +131,10 @@ const CourseAuthoringRoutes = () => {
         <Route
           path="textbooks"
           element={<PageWrap><Textbooks courseId={courseId} /></PageWrap>}
+        />
+        <Route
+          path="block/:blockId/:blockType"
+          element={<PageWrap><InstructionsHelpEditorPage courseId={courseId} /></PageWrap>}
         />
       </Routes>
     </CourseAuthoringPage>
