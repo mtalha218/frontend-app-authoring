@@ -38,6 +38,7 @@ import { PasteNotificationAlert } from "./clipboard";
 import Attempts from "./sidebar/Attempts";
 import AccessCode from "./sidebar/AccessCode";
 import { base_url } from "../compugrade-constants";
+import InstructionXBlock from "../compugrade/components/InstructionXBlock.jsx";
 
 const CourseUnit = ({ courseId }) => {
   const { blockId } = useParams();
@@ -76,7 +77,7 @@ const CourseUnit = ({ courseId }) => {
   const [unitData, setUnitData] = useState(null);
 
   const handleCreateCompugradeXBlock = (type) => {
-    navigate(`/course/${courseId}/block/${blockId}/${type}`);
+    navigate(`/course/${courseId}/block/${blockId}/${sequenceId}/${type}`);
   };
 
   useEffect(() => {
@@ -96,7 +97,7 @@ const CourseUnit = ({ courseId }) => {
 
         const result = await response.json();
         setUnitData(result); // Save the API response to state
-        console.log(result);
+        // console.log(result);
       } catch (err) {
         // setError(err.message); // Capture any errors
         console.log(err);
@@ -226,6 +227,10 @@ const CourseUnit = ({ courseId }) => {
                         />
                       )
                     )}
+                   {unitData?.description	 && <InstructionXBlock title={"Overview"} data={unitData.description	} type={"overview"} handleEdit={handleCreateCompugradeXBlock}/>}
+                   {unitData?.tools && <InstructionXBlock title={"Tools and Terms"} data={unitData.tools} type={"tools"} handleEdit={handleCreateCompugradeXBlock}/>}
+                   {unitData?.skills && <InstructionXBlock title={"Skills"} data={unitData.skills} type={"skills"} handleEdit={handleCreateCompugradeXBlock}/>}
+
                   </SortableContext>
                 </DraggableList>
               </Stack>

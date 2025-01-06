@@ -65,7 +65,7 @@ const AddComponent = ({ blockId, handleCreateNewCourseXBlock, handleCreateCompug
             parentLocator: blockId,
           },
           ({ courseKey, locator }) => {
-            navigate(`/course/${courseKey}/editor/html/${locator}`);
+            navigate(`/course/${courseKey}/editor/html/${locator}/${blockId}`);
           }
         );
         break;

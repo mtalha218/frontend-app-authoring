@@ -1,14 +1,15 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import { Button } from "@openedx/paragon";
-import { useParams } from "react-router";
-import { base_url } from "../compugrade-constants";
+import { useNavigate, useParams } from "react-router";
+import { base_url } from "../../compugrade-constants";
 
 const InstructionsHelpEditorPage = ({ courseId }) => {
   const editorRef = useRef(null);
   const [output, setOutput] = useState("");
   const [blockInfo, setBlockInfo] = useState({ key: "", title: "" });
-  const { blockId, blockType } = useParams();
+  const { blockId,sequenceId, blockType } = useParams();
+  const navigate = useNavigate()
 
   useEffect(() => {
     // Conditional logic for setting blockInfo based on blockType
@@ -19,6 +20,35 @@ const InstructionsHelpEditorPage = ({ courseId }) => {
     } else if (blockType === "overview") {
       setBlockInfo({ key: "description", title: "Overview" });
     }
+
+    const fetchData = async () => {
+      try {
+        const encodedBlockId = encodeURIComponent(blockId); // Encode the block ID
+        const response = await fetch(
+          `${base_url}/api/openedx/get_rubric?openedx_based_id=${encodedBlockId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json", 
+            },
+            body: JSON.stringify({ name: "Hello" }), 
+          }
+        );
+
+        const result = await response.json();
+        if (response.ok && editorRef.current) {
+          // Set the editor's content based on the response
+          console.log(result[blockInfo.key]);
+          
+          const content = result[blockType] || ""
+          editorRef.current.setContent(content);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchData();
   }, [blockType]); // Run when blockType changes
 
   const handleButtonClick = async () => {
@@ -40,7 +70,15 @@ const InstructionsHelpEditorPage = ({ courseId }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(requestBody), // Send the request body
+
         });
+        if (response) {
+          // Navigate to the desired page if the response is successful
+          navigate(`/course/${courseId}/container/${blockId}/${sequenceId}`);
+        } else {
+          // Handle the error response
+          // console.error("Failed to update rubric:", response.statusText);
+        }
       } catch (error) {
         console.error("Error:", error);
       }
@@ -64,7 +102,7 @@ const InstructionsHelpEditorPage = ({ courseId }) => {
     >
       <h3 className="mb-4">{blockInfo.title}</h3>
       <Editor
-        apiKey="your-tinymce-api-key" // Replace with your TinyMCE API key
+        // apiKey="your-tinymce-api-key" // Replace with your TinyMCE API key
         onInit={(evt, editor) => (editorRef.current = editor)}
         initialValue="<p>Start typing here...</p>"
         id="question"

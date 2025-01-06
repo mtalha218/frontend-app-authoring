@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { Dropdown, Stack } from "@openedx/paragon";
 import { base_url } from "../../compugrade-constants";
 
-const Attempts = ({attempts,blockId}) => {
-
-const [attemptValue, setAttemptValue] = useState(attempts)
+const Attempts = ({ attempts, blockId }) => {
+  const [attemptValue, setAttemptValue] = useState(attempts);
   const attemptsObject = {
     label: "No. of Attempts",
     name: "attempts",
@@ -13,26 +12,33 @@ const [attemptValue, setAttemptValue] = useState(attempts)
   };
 
   const handleAttemptChange = async (value) => {
+    const apiResponse = await fetch(base_url + "/api/openedx/update_rubric", {
+      method: "PATCH",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        num_of_attempts: value,
+        openedx_based_id: blockId,
+      }),
+    });
+    if (!apiResponse.ok) {
+      // Handle non-2xx HTTP responses
+      console.error("Error:", apiResponse.status, apiResponse.statusText);
+      return;
+    }
 
-    const apiResponse = await fetch(
-      base_url+'/api/openedx/update_rubric',
-      {
-        method: 'PATCH',
-        headers: {
-          Accept: 'application/json, text/plain, */*',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          no_of_attempts: value,
-          openedx_based_id: blockId
-        }),
-      }
-    );
-  }
-  
+    // Parse the JSON response
+    const responseData = await apiResponse.json();
+    setAttemptValue(responseData.num_of_attempts);
+  };
+
   return (
     <Stack className="course-unit-sidebar-header" direction="vertical">
-      <h3 className="course-unit-sidebar-header-title m-0">{attemptsObject.label}</h3>
+      <h3 className="course-unit-sidebar-header-title m-0">
+        {attemptsObject.label}
+      </h3>
       <Dropdown className="mt-3 w-100">
         <Dropdown.Toggle
           id="type-dropdown"
@@ -43,7 +49,10 @@ const [attemptValue, setAttemptValue] = useState(attempts)
         </Dropdown.Toggle>
         <Dropdown.Menu className="w-100">
           {attemptsObject.options.map((value) => (
-            <Dropdown.Item key={value} onClick={() => handleAttemptChange(value)}>
+            <Dropdown.Item
+              key={value}
+              onClick={() => handleAttemptChange(value)}
+            >
               {value}
             </Dropdown.Item>
           ))}
