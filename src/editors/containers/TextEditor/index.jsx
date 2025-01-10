@@ -49,35 +49,67 @@ const TextEditor = ({
   const { unitId } = useParams();
   const encodedBlockId = encodeURIComponent(unitId); // Encode the block ID
   const [lessonData, setLessonData] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(true); // Add a state variable for triggering useEffect
+  const [refreshKey, setRefreshKey] = useState(0); // Add a state variable for triggering useEffect
+
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        `${base_url}/api/openedx/get_all_edx_rubric_items?openedx_based_id=${encodedBlockId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ body: "Hello" }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      setLessonData(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `${base_url}/api/openedx/get_all_edx_rubric_items?openedx_based_id=${encodedBlockId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ body: "Hello" }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-
-        const data = await response.json();
-        setLessonData(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
     fetchData();
   }, [refreshKey]);
+
+  const handlePreview = async () => {
+    const editorText = editorRef.current.getContent({ format: "text" });
+    const stringArray = editorText
+      .split("\n")
+      .filter((str) => str.trim() !== "");
+    setLessonData(null);
+    try {
+      const response = await fetch(
+        `${base_url}/api/openedx/create_rubric_item`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            rubric_openedx_based_id: unitId,
+            natural_text: stringArray,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      setRefreshKey(prev => prev + 1); // Increment instead of toggle
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   let staticRootUrl;
   if (isLibrary) {
@@ -90,34 +122,6 @@ const TextEditor = ({
     return null;
   }
 
-  const handlePreview = async () => {
-    const editorText = editorRef.current.getContent({ format: "text" });
-    const stringArray = editorText
-      .split("\n")
-      .filter((str) => str.trim() !== "");
-      setLessonData(null)
-    try {
-      const response = await fetch(
-        `${base_url}/api/openedx/create_rubric_item`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({rubric_openedx_based_id: unitId, natural_text: stringArray }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-      setRefreshKey(!refreshKey)
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const selectEditor = () => {
     if (showRawEditor) {
@@ -141,14 +145,15 @@ const TextEditor = ({
               staticRootUrl,
             }}
           />
-          <div className="d-flex justify-content-end mt-3">
-            <Button variant="outline-primary" onClick={handlePreview}>
-              Preview
+          <div className="d-flex mt-3">
+            <Button variant="primary" onClick={handlePreview}>
+              AI Generate
             </Button>
           </div>
         </div>
-        <div style={{ width: "30%", height: "100vh" }}>
-          <InstructionsPreview lessonData={lessonData} />
+        <div style={{ width: "30%", overflowY:"auto" }}>
+          <InstructionsPreview lessonData={lessonData} refreshData={fetchData} // Pass fetch function instead of refresh state
+ />
         </div>
       </div>
     );
